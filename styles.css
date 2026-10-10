@@ -166,6 +166,18 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .text-editor:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(216,137,161,.12); }
 .text-editor::placeholder { color: #b9adb2; }
 .editor-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--faint); font-size: .7rem; }
+.mobile-height-controls { display: none; align-items: center; gap: 7px; }
+.mobile-height-controls button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  color: var(--rose-ink);
+  background: var(--pink-pale);
+  font-size: 1rem;
+  line-height: 1;
+}
 
 body.editor-expanded { overflow: hidden; }
 body.editor-expanded #textSection {
@@ -449,6 +461,9 @@ footer a { color: var(--pink-deep); }
   .stage { min-height: 520px; padding: 25px 14px 34px 57px; }
   .empty-state { min-height: 460px; }
   body.editor-expanded #textSection { inset: 8px; border-radius: 16px; }
+  .text-editor { min-height: 280px; resize: none; }
+  .desktop-resize-hint { display: none; }
+  .mobile-height-controls { display: flex; }
 }
 
 @media (max-width: 480px) {

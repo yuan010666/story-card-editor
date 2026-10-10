@@ -43,7 +43,12 @@
           <textarea id="textInput" class="text-editor" spellcheck="false" placeholder="把長篇劇情貼在這裡……"></textarea>
           <div class="editor-footer">
             <span id="charCount">0 字</span>
-            <span>可拖曳右下角自由調整高度</span>
+            <span class="desktop-resize-hint">可拖曳右下角自由調整高度</span>
+            <div class="mobile-height-controls" aria-label="調整文字框高度">
+              <button id="editorShorter" type="button" aria-label="縮短文字框">−</button>
+              <span>調整高度</span>
+              <button id="editorTaller" type="button" aria-label="加高文字框">＋</button>
+            </div>
           </div>
         </div>
 

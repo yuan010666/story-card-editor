@@ -181,6 +181,14 @@ function updateCharacterCount() {
   $("#charCount").textContent = `${length.toLocaleString("zh-TW")} 字`;
 }
 
+function adjustEditorHeight(delta) {
+  const editor = $("#textInput");
+  const current = editor.getBoundingClientRect?.().height || Number.parseFloat(editor.style.height) || 310;
+  const next = clamp(Math.round(current + delta), 280, 1000);
+  editor.style.height = `${next}px`;
+  toast(next === 280 ? "已縮至最小高度" : next === 1000 ? "已加至最大高度" : `文字框高度：${next} px`);
+}
+
 function setMode(mode) {
   if (state.mode === mode) return;
   state.mode = mode;
@@ -1010,6 +1018,8 @@ $("#expandEditor").addEventListener("click", () => {
   $("#expandEditor").setAttribute("aria-expanded", String(expanded));
   if (expanded) $("#textInput").focus();
 });
+$("#editorShorter").addEventListener("click", () => adjustEditorHeight(-140));
+$("#editorTaller").addEventListener("click", () => adjustEditorHeight(140));
 
 $("#textInput").addEventListener("input", () => {
   updateCharacterCount();
