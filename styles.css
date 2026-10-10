@@ -415,6 +415,14 @@ body.editor-expanded #expandEditor { padding: 9px 14px; border-radius: 999px; co
 .cut-label { position: absolute; right: 16px; top: -24px; padding: 3px 7px; border-radius: 999px; color: #fff; background: var(--pink); font-size: .57rem; }
 .canvas-wrap.removing-cut .cut, .canvas-wrap.removing-cut .cut-handle { background: var(--pink-deep); }
 
+.single-downloads { padding: 18px 3px 2px; }
+.single-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.single-heading h3 { margin: 0; font-size: .87rem; }
+.single-heading span { color: var(--faint); font-size: .67rem; }
+.single-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.single-list button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--rose-ink); background: #fff; font-size: .69rem; font-weight: 700; }
+.single-list button:hover { border-color: var(--pink); background: var(--pink-pale); }
+
 footer { max-width: 850px; margin: 24px auto 0; color: var(--faint); font-size: .67rem; line-height: 1.6; text-align: center; }
 footer a { color: var(--pink-deep); }
 
@@ -481,6 +489,7 @@ footer a { color: var(--pink-deep); }
   .preview-toolbar button { height: 32px; font-size: .64rem; }
   .preview-toolbar button span { font-size: .75rem; }
   .stage { margin-inline: -2px; }
+  .single-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

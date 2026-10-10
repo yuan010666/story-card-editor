@@ -216,6 +216,8 @@ function clearPreview({ keepLive = false } = {}) {
   $("#canvasWrap").classList.remove("adding-cut", "removing-cut");
   $("#empty").classList.remove("hidden");
   $("#previewToolbar").classList.add("hidden");
+  $("#singleDownloads").classList.add("hidden");
+  $("#singleDownloadList").replaceChildren();
   $("#count").textContent = "—";
   setToolbarDisabled(true);
   setPreviewStatus(state.livePreview ? "等待內容" : "尚未產生", false);
@@ -691,10 +693,12 @@ function renderCuts() {
 
   $("#count").textContent = `${state.cuts.length + 1} 張`;
   state.outputFiles = null;
+  $("#singleDownloads").classList.add("hidden");
   clearTimeout(state.outputTimer);
   state.outputTimer = setTimeout(async () => {
     try {
       state.outputFiles = await makeOutputFiles();
+      renderSingleDownloads(state.outputFiles);
     } catch (error) {
       console.error(error);
     }
@@ -728,6 +732,19 @@ async function makeOutputFiles() {
     files.push(new File([blob], `圖卡_${String(index + 1).padStart(2, "0")}.png`, { type: "image/png" }));
   }
   return files;
+}
+
+function renderSingleDownloads(files) {
+  const list = $("#singleDownloadList");
+  list.replaceChildren();
+  files.forEach((file, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `圖卡 ${String(index + 1).padStart(2, "0")} ↓`;
+    button.addEventListener("click", () => downloadFile(file));
+    list.append(button);
+  });
+  $("#singleDownloads").classList.toggle("hidden", !files.length);
 }
 
 function downloadFile(file) {
