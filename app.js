@@ -9,6 +9,27 @@ const RATIOS = {
   "9:16": [1080, 1920],
 };
 
+const SETTINGS_STORAGE_KEY = "story-card-settings-v1";
+const SETTINGS_DEFAULTS = Object.freeze({
+  ratio: "3:4",
+  width: 1080,
+  height: 1440,
+  fontFamily: "huninn",
+  fontSize: 42,
+  boldAll: false,
+  padding: 96,
+  bg: "#f7f3ea",
+  dark: "#252525",
+  light: "#a39e96",
+  redactColor: "#252525",
+  redactMode: "same",
+});
+
+const SAVED_CONTROL_IDS = [
+  "width", "height", "fontFamily", "fontSize", "boldAll", "padding",
+  "bg", "dark", "light", "redactColor",
+];
+
 const fonts = {
   huninn: { family: '"Huninn","PingFang TC","Noto Sans TC",sans-serif', load: "Huninn" },
   goround: { family: '"Chiron GoRound TC","PingFang TC","Noto Sans TC",sans-serif', load: "Chiron GoRound TC" },
@@ -63,6 +84,96 @@ function toast(message) {
   element.classList.add("show");
   clearTimeout(element._timer);
   element._timer = setTimeout(() => element.classList.remove("show"), 2200);
+}
+
+function safeStoredSettings() {
+  try {
+    const raw = globalThis.localStorage?.getItem(SETTINGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.debug("無法讀取本機設定", error);
+    return null;
+  }
+}
+
+function validColor(value, fallback) {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : fallback;
+}
+
+function normalizeSettings(value = {}) {
+  const ratio = value.ratio === "custom" || RATIOS[value.ratio] ? value.ratio : SETTINGS_DEFAULTS.ratio;
+  return {
+    ratio,
+    width: clamp(Number(value.width ?? SETTINGS_DEFAULTS.width), 320, 2400),
+    height: clamp(Number(value.height ?? SETTINGS_DEFAULTS.height), 400, 3200),
+    fontFamily: Object.hasOwn(fonts, value.fontFamily) ? value.fontFamily : SETTINGS_DEFAULTS.fontFamily,
+    fontSize: clamp(Number(value.fontSize ?? SETTINGS_DEFAULTS.fontSize), 18, 120),
+    boldAll: typeof value.boldAll === "boolean" ? value.boldAll : SETTINGS_DEFAULTS.boldAll,
+    padding: clamp(Number(value.padding ?? SETTINGS_DEFAULTS.padding), 32, 180),
+    bg: validColor(value.bg, SETTINGS_DEFAULTS.bg),
+    dark: validColor(value.dark, SETTINGS_DEFAULTS.dark),
+    light: validColor(value.light, SETTINGS_DEFAULTS.light),
+    redactColor: validColor(value.redactColor, SETTINGS_DEFAULTS.redactColor),
+    redactMode: value.redactMode === "each" ? "each" : "same",
+  };
+}
+
+function collectSettings() {
+  return normalizeSettings({
+    ratio: state.ratio,
+    width: $("#width").value,
+    height: $("#height").value,
+    fontFamily: $("#fontFamily").value,
+    fontSize: $("#fontSize").value,
+    boldAll: $("#boldAll").checked,
+    padding: $("#padding").value,
+    bg: $("#bg").value,
+    dark: $("#dark").value,
+    light: $("#light").value,
+    redactColor: $("#redactColor").value,
+    redactMode: $('input[name="redactMode"]:checked')?.value,
+  });
+}
+
+function saveSettings() {
+  try {
+    globalThis.localStorage?.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(collectSettings()));
+  } catch (error) {
+    console.debug("無法儲存本機設定", error);
+  }
+}
+
+function applySettings(value) {
+  const settings = normalizeSettings({ ...SETTINGS_DEFAULTS, ...value });
+  $("#width").value = settings.width;
+  $("#height").value = settings.height;
+  $("#fontFamily").value = settings.fontFamily;
+  $("#fontSize").value = settings.fontSize;
+  $("#boldAll").checked = settings.boldAll;
+  $("#padding").value = settings.padding;
+  $("#bg").value = settings.bg;
+  $("#dark").value = settings.dark;
+  $("#light").value = settings.light;
+  $("#redactColor").value = settings.redactColor;
+  $$('input[name="redactMode"]').forEach((radio) => { radio.checked = radio.value === settings.redactMode; });
+  selectRatio(settings.ratio);
+  $("#paddingValue").textContent = `${settings.padding} px`;
+  updateFontPreview();
+  updateColorLabel("#bg", "#bgHex");
+  updateColorLabel("#dark", "#darkHex");
+  updateColorLabel("#light", "#lightHex");
+  renderRedactList();
+}
+
+function resetSavedSettings() {
+  try {
+    globalThis.localStorage?.removeItem(SETTINGS_STORAGE_KEY);
+  } catch (error) {
+    console.debug("無法清除本機設定", error);
+  }
+  applySettings(SETTINGS_DEFAULTS);
+  scheduleLivePreview("layout", 80);
+  toast("已恢復預設設定");
 }
 
 function updateCharacterCount() {
@@ -888,7 +999,10 @@ function registerWebMCP() {
 
 function initializeApp() {
 $$(".mode-tab").forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
-$$(".ratio-option").forEach((button) => button.addEventListener("click", () => selectRatio(button.dataset.ratio)));
+$$(".ratio-option").forEach((button) => button.addEventListener("click", () => {
+  selectRatio(button.dataset.ratio);
+  saveSettings();
+}));
 
 $("#expandEditor").addEventListener("click", () => {
   const expanded = document.body.classList.toggle("editor-expanded");
@@ -930,6 +1044,7 @@ $("#redactColor").addEventListener("input", () => scheduleLivePreview("visual", 
 $$('input[name="redactMode"]').forEach((radio) => radio.addEventListener("change", () => {
   renderRedactList();
   scheduleLivePreview("visual", 80);
+  saveSettings();
 }));
 
 [
@@ -940,6 +1055,12 @@ $$('input[name="redactMode"]').forEach((radio) => radio.addEventListener("change
   updateColorLabel(input, label);
   scheduleLivePreview("visual", 60);
 }));
+
+SAVED_CONTROL_IDS.forEach((id) => {
+  $("#" + id).addEventListener("input", saveSettings);
+  $("#" + id).addEventListener("change", saveSettings);
+});
+$("#resetSettings").addEventListener("click", resetSavedSettings);
 
 $("#addCut").addEventListener("click", () => setAddMode(!state.addingCut));
 $("#removeCut").addEventListener("click", () => setRemoveMode(!state.removingCut));
@@ -993,10 +1114,8 @@ window.addEventListener("resize", () => {
   if (state.sourceCanvas) requestAnimationFrame(renderCuts);
 });
 
-syncResolvedSize();
+applySettings(safeStoredSettings() || SETTINGS_DEFAULTS);
 updateCharacterCount();
-updateFontPreview();
-renderRedactList();
 registerWebMCP();
 }
 
@@ -1013,5 +1132,8 @@ if (typeof module !== "undefined" && module.exports) {
     smartCuts,
     state,
     RATIOS,
+    collectSettings,
+    normalizeSettings,
+    SETTINGS_DEFAULTS,
   };
 }

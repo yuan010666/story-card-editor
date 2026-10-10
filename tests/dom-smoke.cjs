@@ -106,8 +106,38 @@ global.document = {
   },
 };
 global.window = { addEventListener() {} };
+global.localStorage = {
+  value: JSON.stringify({
+    ratio: "3:4",
+    width: 1080,
+    height: 1440,
+    fontFamily: "song",
+    fontSize: 48,
+    boldAll: true,
+    padding: 88,
+    bg: "#fff1f5",
+    dark: "#432735",
+    light: "#b8899a",
+    redactColor: "#432735",
+    redactMode: "same",
+  }),
+  getItem() { return this.value; },
+  setItem(key, value) { this.value = value; },
+  removeItem() { this.value = null; },
+};
 
-const { makeTextCanvas, smartCuts, state } = require("../app.js");
+const { makeTextCanvas, normalizeSettings, smartCuts, state } = require("../app.js");
+
+assert.equal(element("fontFamily").value, "song");
+assert.equal(element("fontSize").value, 48);
+assert.equal(element("boldAll").checked, true);
+assert.equal(element("bg").value, "#fff1f5");
+assert.equal(element("paddingValue").textContent, "88 px");
+assert.deepEqual(normalizeSettings({ fontFamily: "不存在", bg: "粉紅色" }), {
+  ratio: "3:4", width: 1080, height: 1440, fontFamily: "huninn", fontSize: 42,
+  boldAll: false, padding: 96, bg: "#f7f3ea", dark: "#252525", light: "#a39e96",
+  redactColor: "#252525", redactMode: "same",
+});
 
 const story = Array.from({ length: 80 }, (_, index) =>
   `第 ${index + 1} 段。這是一段測試自動換行的繁體中文。**這裡要粗體**，*這裡要淺色*。`,
