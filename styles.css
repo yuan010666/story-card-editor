@@ -166,18 +166,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .text-editor:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(216,137,161,.12); }
 .text-editor::placeholder { color: #b9adb2; }
 .editor-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--faint); font-size: .7rem; }
-.mobile-height-controls { display: none; align-items: center; gap: 7px; }
-.mobile-height-controls button {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 9px;
-  color: var(--rose-ink);
-  background: var(--pink-pale);
-  font-size: 1rem;
-  line-height: 1;
-}
 
 body.editor-expanded { overflow: hidden; }
 body.editor-expanded #textSection {
@@ -374,6 +362,26 @@ body.editor-expanded #expandEditor { padding: 9px 14px; border-radius: 999px; co
 .preview-toolbar button.active { border-color: #e7bdca; color: var(--rose-ink); background: var(--pink-soft); }
 .preview-toolbar button:disabled { opacity: .36; cursor: not-allowed; }
 .preview-toolbar button span { color: var(--pink-deep); font-size: .83rem; }
+.preview-toolbar .phone-icon {
+  width: 12px;
+  height: 18px;
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+}
+.preview-toolbar .phone-icon::after {
+  content: "";
+  width: 2px;
+  height: 2px;
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translateX(-50%);
+}
 .preview-toolbar .toolbar-primary { color: #fff; background: var(--pink-deep); }
 .preview-toolbar .toolbar-primary:hover:not(:disabled) { color: #fff; background: #9c5169; }
 .preview-toolbar .toolbar-primary span { color: inherit; font-size: .57rem; }
@@ -406,14 +414,6 @@ body.editor-expanded #expandEditor { padding: 9px 14px; border-radius: 999px; co
 .cut-handle { width: 34px; height: 34px; position: absolute; left: 0; top: -15px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; color: #fff; background: var(--pink); box-shadow: 0 4px 12px rgba(116,61,80,.2); font-size: 16px; }
 .cut-label { position: absolute; right: 16px; top: -24px; padding: 3px 7px; border-radius: 999px; color: #fff; background: var(--pink); font-size: .57rem; }
 .canvas-wrap.removing-cut .cut, .canvas-wrap.removing-cut .cut-handle { background: var(--pink-deep); }
-
-.single-downloads { padding: 18px 3px 2px; }
-.single-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.single-heading h3 { margin: 0; font-size: .87rem; }
-.single-heading span { color: var(--faint); font-size: .67rem; }
-.single-list { display: flex; flex-wrap: wrap; gap: 7px; }
-.single-list button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--rose-ink); background: #fff; font-size: .69rem; font-weight: 700; }
-.single-list button:hover { border-color: var(--pink); background: var(--pink-pale); }
 
 footer { max-width: 850px; margin: 24px auto 0; color: var(--faint); font-size: .67rem; line-height: 1.6; text-align: center; }
 footer a { color: var(--pink-deep); }
@@ -456,14 +456,13 @@ footer a { color: var(--pink-deep); }
   .ratio-option { height: 68px; }
   .preview-toolbar { top: 8px; }
   .toolbar-group { display: grid; grid-template-columns: repeat(4, 1fr); }
-  .toolbar-group.export-group { grid-template-columns: repeat(3, 1fr); }
+  .toolbar-group.export-group { grid-template-columns: repeat(2, 1fr); }
   .preview-toolbar button { justify-content: center; padding-inline: 6px; }
   .stage { min-height: 520px; padding: 25px 14px 34px 57px; }
   .empty-state { min-height: 460px; }
   body.editor-expanded #textSection { inset: 8px; border-radius: 16px; }
   .text-editor { min-height: 280px; resize: none; }
   .desktop-resize-hint { display: none; }
-  .mobile-height-controls { display: flex; }
 }
 
 @media (max-width: 480px) {
@@ -482,7 +481,6 @@ footer a { color: var(--pink-deep); }
   .preview-toolbar button { height: 32px; font-size: .64rem; }
   .preview-toolbar button span { font-size: .75rem; }
   .stage { margin-inline: -2px; }
-  .single-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -181,14 +181,6 @@ function updateCharacterCount() {
   $("#charCount").textContent = `${length.toLocaleString("zh-TW")} 字`;
 }
 
-function adjustEditorHeight(delta) {
-  const editor = $("#textInput");
-  const current = editor.getBoundingClientRect?.().height || Number.parseFloat(editor.style.height) || 310;
-  const next = clamp(Math.round(current + delta), 280, 1000);
-  editor.style.height = `${next}px`;
-  toast(next === 280 ? "已縮至最小高度" : next === 1000 ? "已加至最大高度" : `文字框高度：${next} px`);
-}
-
 function setMode(mode) {
   if (state.mode === mode) return;
   state.mode = mode;
@@ -206,7 +198,7 @@ function setPreviewStatus(label, live = state.livePreview) {
 }
 
 function setToolbarDisabled(disabled) {
-  ["addCut", "removeCut", "resetCuts", "clearCuts", "share", "downloadAll", "downloadZip"].forEach((id) => {
+  ["addCut", "removeCut", "resetCuts", "clearCuts", "share", "downloadZip"].forEach((id) => {
     $(`#${id}`).disabled = disabled;
   });
 }
@@ -224,8 +216,6 @@ function clearPreview({ keepLive = false } = {}) {
   $("#canvasWrap").classList.remove("adding-cut", "removing-cut");
   $("#empty").classList.remove("hidden");
   $("#previewToolbar").classList.add("hidden");
-  $("#singleDownloads").classList.add("hidden");
-  $("#singleDownloadList").replaceChildren();
   $("#count").textContent = "—";
   setToolbarDisabled(true);
   setPreviewStatus(state.livePreview ? "等待內容" : "尚未產生", false);
@@ -701,12 +691,10 @@ function renderCuts() {
 
   $("#count").textContent = `${state.cuts.length + 1} 張`;
   state.outputFiles = null;
-  $("#singleDownloads").classList.add("hidden");
   clearTimeout(state.outputTimer);
   state.outputTimer = setTimeout(async () => {
     try {
       state.outputFiles = await makeOutputFiles();
-      renderSingleDownloads(state.outputFiles);
     } catch (error) {
       console.error(error);
     }
@@ -742,19 +730,6 @@ async function makeOutputFiles() {
   return files;
 }
 
-function renderSingleDownloads(files) {
-  const list = $("#singleDownloadList");
-  list.replaceChildren();
-  files.forEach((file, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = `圖卡 ${String(index + 1).padStart(2, "0")} ↓`;
-    button.addEventListener("click", () => downloadFile(file));
-    list.append(button);
-  });
-  $("#singleDownloads").classList.toggle("hidden", !files.length);
-}
-
 function downloadFile(file) {
   const url = URL.createObjectURL(file);
   const anchor = document.createElement("a");
@@ -768,24 +743,6 @@ function downloadFile(file) {
 
 async function getOutputFiles() {
   return state.outputFiles || makeOutputFiles();
-}
-
-async function downloadAllImages() {
-  if (!state.sourceCanvas) return;
-  $("#downloadAll").disabled = true;
-  try {
-    const files = await getOutputFiles();
-    for (const file of files) {
-      downloadFile(file);
-      await new Promise((resolve) => setTimeout(resolve, 220));
-    }
-    toast(`已下載 ${files.length} 張 PNG`);
-  } catch (error) {
-    console.error(error);
-    toast("圖片下載失敗，請再試一次");
-  } finally {
-    $("#downloadAll").disabled = false;
-  }
 }
 
 const CRC_TABLE = (() => {
@@ -1018,8 +975,6 @@ $("#expandEditor").addEventListener("click", () => {
   $("#expandEditor").setAttribute("aria-expanded", String(expanded));
   if (expanded) $("#textInput").focus();
 });
-$("#editorShorter").addEventListener("click", () => adjustEditorHeight(-140));
-$("#editorTaller").addEventListener("click", () => adjustEditorHeight(140));
 
 $("#textInput").addEventListener("input", () => {
   updateCharacterCount();
@@ -1104,7 +1059,6 @@ $("#canvasWrap").addEventListener("pointerdown", (event) => {
   toast("已新增切割線");
 });
 
-$("#downloadAll").addEventListener("click", downloadAllImages);
 $("#downloadZip").addEventListener("click", downloadZip);
 $("#share").addEventListener("click", shareImages);
 
