@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="把長篇劇情排成好閱讀、好分享的多張圖卡。所有內容只在瀏覽器本機處理。">
+  <meta name="theme-color" content="#f8eef1">
+  <title>劇情圖卡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;700&family=Chiron+Sung+HK:wght@400;700&family=Hachi+Maru+Pop&family=Huninn&family=Iansui&family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">文</span>
+        <div>
+          <h1>劇情圖卡</h1>
+          <p>長文排版與智慧切割工具</p>
+        </div>
+      </div>
+      <div class="local-badge"><span aria-hidden="true">●</span> 僅在裝置內處理</div>
+    </header>
+
+    <nav class="mode-tabs" aria-label="工具模式">
+      <button class="mode-tab active" type="button" data-mode="text">文字轉圖卡</button>
+      <button class="mode-tab" type="button" data-mode="split">長圖切割</button>
+    </nav>
+
+    <div class="workspace">
+      <section class="control-panel card">
+        <div id="textSection" class="editor-section">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">01</span>
+              <h2>貼上文字</h2>
+            </div>
+            <button id="expandEditor" class="text-button" type="button" aria-expanded="false">展開編輯</button>
+          </div>
+          <p class="helper-copy"><code>*淺色文字*</code>、<code>**局部粗體**</code>、行首 <code>&gt;</code> 引用、單獨一行 <code>---</code> 分隔。換行會保留。</p>
+          <textarea id="textInput" class="text-editor" spellcheck="false" placeholder="把長篇劇情貼在這裡……"></textarea>
+          <div class="editor-footer">
+            <span id="charCount">0 字</span>
+            <span>可拖曳右下角自由調整高度</span>
+          </div>
+        </div>
+
+        <div id="uploadSection" class="hidden">
+          <div class="section-heading">
+            <div><span class="eyebrow">01</span><h2>上傳長圖</h2></div>
+          </div>
+          <p class="helper-copy">依目標高度自動切割，再拖曳粉色切割線微調。</p>
+          <label class="drop-zone" id="drop">
+            <input id="fileInput" type="file" accept="image/*">
+            <span class="drop-icon" aria-hidden="true">＋</span>
+            <strong>拖曳圖片到這裡</strong>
+            <span>或點選上傳 JPG、PNG、WebP</span>
+          </label>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-heading compact">
+            <div><span class="eyebrow">02</span><h2>圖卡設定</h2></div>
+          </div>
+
+          <fieldset class="field-group" id="ratioFieldset">
+            <legend>每張圖片比例</legend>
+            <div class="ratio-grid" id="ratioGrid">
+              <button type="button" class="ratio-option" data-ratio="2:3"><span class="ratio-shape r23"></span><b>2:3</b></button>
+              <button type="button" class="ratio-option active" data-ratio="3:4"><span class="ratio-shape r34"></span><b>3:4</b></button>
+              <button type="button" class="ratio-option" data-ratio="3:5"><span class="ratio-shape r35"></span><b>3:5</b></button>
+              <button type="button" class="ratio-option" data-ratio="4:5"><span class="ratio-shape r45"></span><b>4:5</b></button>
+              <button type="button" class="ratio-option" data-ratio="9:16"><span class="ratio-shape r916"></span><b>9:16</b></button>
+              <button type="button" class="ratio-option" data-ratio="custom"><span class="ratio-shape custom">↔</span><b>自訂</b></button>
+            </div>
+            <p id="sizeSummary" class="setting-summary">輸出基準：1080 × 1440 px</p>
+          </fieldset>
+
+          <div id="customSize" class="two-column hidden">
+            <label class="field"><span>寬度</span><input id="width" type="number" min="320" max="2400" value="1080"></label>
+            <label class="field"><span>每張高度</span><input id="height" type="number" min="400" max="3200" value="1440"></label>
+          </div>
+          <input id="resolvedWidth" type="hidden" value="1080">
+          <input id="resolvedHeight" type="hidden" value="1440">
+
+          <div id="textSettings">
+            <div class="two-column">
+              <label class="field"><span>字體</span>
+                <select id="fontFamily">
+                  <optgroup label="經典正文">
+                    <option value="ming">明體</option>
+                    <option value="song">宋體</option>
+                    <option value="fangsong">仿宋體</option>
+                    <option value="sans">黑體</option>
+                  </optgroup>
+                  <optgroup label="圓體與手寫">
+                    <option value="huninn" selected>粉圓體</option>
+                    <option value="goround">秋空圓體</option>
+                    <option value="hachimaru">丸丸泡泡體</option>
+                    <option value="wenkai">霞鶩文楷</option>
+                    <option value="iansui">芫荽手寫</option>
+                    <option value="klee">手帳筆記體</option>
+                  </optgroup>
+                  <optgroup label="系統字體">
+                    <option value="rounded">系統圓體</option>
+                    <option value="mono">等寬體</option>
+                  </optgroup>
+                </select>
+              </label>
+              <label class="field"><span>文字大小</span><input id="fontSize" type="number" min="18" max="120" value="42"></label>
+            </div>
+
+            <label class="toggle-row" for="boldAll">
+              <span><b>整篇粗體</b><small>仍可用 **文字** 個別加粗</small></span>
+              <input id="boldAll" type="checkbox"><i aria-hidden="true"></i>
+            </label>
+
+            <div class="font-preview" id="fontPreview">今天的劇情也超好看 ABC 123</div>
+            <p class="font-note" id="fontNote"></p>
+
+            <label class="field full"><span>要遮蔽的字詞 <small>用逗號或換行分隔</small></span><textarea id="redactWords" rows="2" placeholder="例如：玩家名稱、角色名稱"></textarea></label>
+            <div class="redact-options">
+              <label><input type="radio" name="redactMode" value="same" checked> 全部同色</label>
+              <label class="color-compact redact-same"><input type="color" id="redactColor" value="#252525"><span>遮蔽色</span></label>
+              <label><input type="radio" name="redactMode" value="each"> 各自指定</label>
+            </div>
+            <div id="redactList" class="redact-list hidden"></div>
+
+            <label class="range-field"><span>頁面內距 <output id="paddingValue">96 px</output></span><input id="padding" type="range" min="32" max="180" value="96"></label>
+
+            <div class="field-group colors">
+              <span class="field-label">顏色</span>
+              <div class="color-grid">
+                <label><input type="color" id="bg" value="#f7f3ea"><span><b>背景</b><small id="bgHex">#F7F3EA</small></span></label>
+                <label><input type="color" id="dark" value="#252525"><span><b>正文</b><small id="darkHex">#252525</small></span></label>
+                <label><input type="color" id="light" value="#a39e96"><span><b>淺色</b><small id="lightHex">#A39E96</small></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="generate" class="primary-button" type="button">
+          <span>產生切割預覽</span><small>第一次產生後自動開啟即時預覽</small>
+        </button>
+      </section>
+
+      <section class="preview-panel card" id="previewPanel">
+        <div class="preview-heading">
+          <div><span class="eyebrow">03</span><h2>切割預覽</h2></div>
+          <div class="preview-status"><span id="liveDot"></span><span id="previewState">尚未產生</span><b id="count">—</b></div>
+        </div>
+
+        <div id="previewToolbar" class="preview-toolbar hidden" aria-label="切割與輸出工具">
+          <div class="toolbar-group">
+            <button id="addCut" type="button" disabled><span>＋</span>新增線</button>
+            <button id="removeCut" type="button" disabled><span>−</span>移除線</button>
+            <button id="resetCuts" type="button" disabled><span>↻</span>自動切</button>
+            <button id="clearCuts" type="button" disabled><span>⌫</span>清空線</button>
+          </div>
+          <div class="toolbar-group export-group">
+            <button id="share" type="button" disabled><span>↗</span>分享</button>
+            <button id="downloadAll" type="button" disabled><span>⇩</span>逐張 PNG</button>
+            <button id="downloadZip" class="toolbar-primary" type="button" disabled><span>ZIP</span>全部下載</button>
+          </div>
+        </div>
+
+        <div class="stage" id="stage">
+          <div class="empty-state" id="empty">
+            <span class="empty-paper" aria-hidden="true"></span>
+            <h3>還沒有預覽</h3>
+            <p>先完成文字與圖卡設定，再按下「產生切割預覽」。<br>之後的調整都會自動更新。</p>
+          </div>
+          <div class="canvas-wrap hidden" id="canvasWrap">
+            <canvas id="canvas"></canvas>
+            <div class="cuts" id="cuts"></div>
+          </div>
+        </div>
+
+        <section id="singleDownloads" class="single-downloads hidden">
+          <div class="single-heading"><h3>單張下載</h3><span>需要重存其中一張時使用</span></div>
+          <div id="singleDownloadList" class="single-list"></div>
+        </section>
+      </section>
+    </div>
+
+    <footer>
+      <p>修改版僅供個人、非商業使用。原作 <a href="https://github.com/gloomoon75/long_card" target="_blank" rel="noreferrer"><strong>劇情分享小幫手</strong></a> © 2026 懶人阿暝，依 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hant" target="_blank" rel="noreferrer">CC BY-NC 4.0</a> 授權；本版本已修改介面與功能。</p>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
