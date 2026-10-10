@@ -12,6 +12,12 @@ const { buildZip, crc32, parseInline, parseLines, RATIOS } = require("../app.js"
   assert.equal(inline.find((item) => item.ch === "粗").bold, true);
   assert.equal(inline.find((item) => item.ch === "淺").light, true);
 
+  const mixedFonts = parseInline("正文 [font=cubic]像素 **粗體**[/font] 正文");
+  assert.equal(mixedFonts.map((item) => item.ch).join(""), "正文 像素 粗體 正文");
+  assert.equal(mixedFonts.find((item) => item.ch === "像").font, "cubic");
+  assert.equal(mixedFonts.find((item) => item.ch === "粗").bold, true);
+  assert.equal(mixedFonts.at(-1).font, null);
+
   const lines = parseLines("第一段\n\n> 引用\n---\n最後一段");
   assert.deepEqual(lines.map((line) => line.kind), ["text", "blank", "text", "rule", "text"]);
   assert.equal(lines[2].quote, true);

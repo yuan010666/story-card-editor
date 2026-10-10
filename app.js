@@ -36,7 +36,11 @@ const fonts = {
   hachimaru: { family: '"Hachi Maru Pop","Huninn","PingFang TC",sans-serif', load: "Hachi Maru Pop", note: "少數繁體字會自動改用粉圓體補上。" },
   wenkai: { family: '"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif', load: "LXGW WenKai TC" },
   iansui: { family: '"Iansui","LXGW WenKai TC","Kaiti TC",serif', load: "Iansui" },
-  klee: { family: '"Klee One","LXGW WenKai TC","Kaiti TC",serif', load: "Klee One", note: "少數繁體字會自動改用霞鶩文楷補上。" },
+  luoyan: { family: '"StoryLuoyan","Iansui","Kaiti TC",serif', load: "StoryLuoyan", note: "文青感較強的纖細手寫體；少數缺字會自動以芫荽補上。" },
+  jason2: { family: '"StoryJason2","Iansui","Kaiti TC",serif', load: "StoryJason2", note: "秀氣、清楚的繁體手寫字。" },
+  swei: { family: '"StorySweiSpring","Noto Serif TC",serif', load: "StorySweiSpring", note: "清爽現代的繁體宋體，適合正文與短句。" },
+  genwan: { family: '"StoryGenWan","Noto Serif TC",serif', load: "StoryGenWan", note: "帶有墨水暈染感的溫暖明體；首次使用載入時間較長。" },
+  cubic: { family: '"Cubic 11","Noto Sans TC",sans-serif', load: "Cubic 11", note: "11 × 11 像素風格，最適合局部台詞與系統訊息。" },
   ming: { family: '"Noto Serif TC","PMingLiU","MingLiU",serif', load: "Noto Serif TC" },
   song: { family: '"Chiron Sung HK","Songti TC","Noto Serif TC",serif', load: "Chiron Sung HK" },
   fangsong: { family: '"FangSong","STFangsong","FangSong_GB2312","Noto Serif TC",serif', load: "Noto Serif TC", note: "會優先使用裝置內建仿宋；沒有時以繁體明體補上，避免缺字。" },
@@ -282,7 +286,19 @@ function parseInline(text) {
   const output = [];
   let light = false;
   let bold = false;
+  const fontStack = [];
   for (let index = 0; index < text.length;) {
+    if (text.startsWith("[/font]", index) && fontStack.length) {
+      fontStack.pop();
+      index += 7;
+      continue;
+    }
+    const fontTag = text.slice(index).match(/^\[font=([a-z0-9_-]+)\]/i);
+    if (fontTag && Object.hasOwn(fonts, fontTag[1])) {
+      fontStack.push(fontTag[1]);
+      index += fontTag[0].length;
+      continue;
+    }
     if (text.startsWith("**", index)) {
       bold = !bold;
       index += 2;
@@ -295,7 +311,7 @@ function parseInline(text) {
       index += 1;
       continue;
     }
-    output.push({ ch: character, light, bold, redact: false });
+    output.push({ ch: character, light, bold, font: fontStack.at(-1) || null, redact: false });
     index += character.length;
   }
   return output;
@@ -383,7 +399,7 @@ function makeTextCanvas(text) {
   const blankHeight = Math.round(lineHeight * .62);
   const ruleHeight = Math.round(lineHeight * 1.1);
   const quoteIndent = Math.round(fontSize * 1.1);
-  const family = fonts[$("#fontFamily").value].family;
+  const baseFamily = fonts[$("#fontFamily").value].family;
   const measure = document.createElement("canvas").getContext("2d");
   const rows = [];
   const redactWords = getRedactWords();
@@ -410,9 +426,10 @@ function makeTextCanvas(text) {
 
     for (const item of characters) {
       const weight = fontWeight(item.bold);
+      const family = item.font ? fonts[item.font].family : baseFamily;
       measure.font = canvasFont(weight, fontSize, family);
       const characterWidth = measure.measureText(item.ch).width;
-      const measured = { ...item, width: characterWidth, weight };
+      const measured = { ...item, width: characterWidth, weight, family };
       if (row.length && rowWidth + characterWidth > maximumWidth) {
         if (NO_START.includes(item.ch)) {
           row.push(measured);
@@ -467,7 +484,7 @@ function makeTextCanvas(text) {
           context.fillStyle = redactColorFor(item.redact);
           context.fillRect(Math.floor(x), Math.round(y + inset - fontSize * .1), Math.ceil(item.width) + 1, Math.round(fontSize * 1.2));
         } else {
-          context.font = canvasFont(item.weight, fontSize, family);
+          context.font = canvasFont(item.weight, fontSize, item.family);
           context.fillStyle = item.light ? $("#light").value : $("#dark").value;
           context.fillText(item.ch, x, y + inset);
         }
@@ -489,17 +506,30 @@ function makeTextCanvas(text) {
 }
 
 async function ensureFont(text) {
-  const font = fonts[$("#fontFamily").value];
   if (!document.fonts?.load) return;
-  const characters = [...new Set([...text.replace(/[\s*>]/g, "")])].join("") || "字";
   const fontSize = clamp(Number($("#fontSize").value), 18, 120);
-  const requests = [
-    document.fonts.load(`${fontWeight(false)} ${fontSize}px ${font.family}`, characters),
-    document.fonts.load(`700 ${fontSize}px ${font.family}`, characters),
-  ];
-  if (font.load) requests.push(document.fonts.load(`400 ${fontSize}px "${font.load}"`, characters));
+  const baseKey = $("#fontFamily").value;
+  const characterSets = new Map([[baseKey, []]]);
+  for (const line of parseLines(text)) {
+    if (line.kind !== "text") continue;
+    for (const item of parseInline(line.text)) {
+      const key = item.font || baseKey;
+      if (!characterSets.has(key)) characterSets.set(key, []);
+      characterSets.get(key).push(item.ch);
+    }
+  }
+  const requests = [];
+  for (const [key, usedCharacters] of characterSets) {
+    const font = fonts[key];
+    const characters = [...new Set(usedCharacters.filter((character) => !/\s/.test(character)))].join("") || "字";
+    requests.push(
+      document.fonts.load(`${fontWeight(false)} ${fontSize}px ${font.family}`, characters),
+      document.fonts.load(`700 ${fontSize}px ${font.family}`, characters),
+    );
+    if (font.load) requests.push(document.fonts.load(`400 ${fontSize}px "${font.load}"`, characters));
+  }
   try {
-    await Promise.race([Promise.all(requests), new Promise((resolve) => setTimeout(resolve, 6000))]);
+    await Promise.race([Promise.all(requests), new Promise((resolve) => setTimeout(resolve, 20000))]);
   } catch (error) {
     console.debug("Font loading fallback", error);
   }
@@ -892,6 +922,31 @@ function updateFontPreview() {
   $("#fontNote").textContent = font.note || "";
 }
 
+function initializeInlineFontTool() {
+  const select = $("#inlineFontFamily");
+  select.innerHTML = $("#fontFamily").innerHTML;
+  select.value = "cubic";
+}
+
+function applyInlineFont() {
+  const editor = $("#textInput");
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  if (!Number.isInteger(start) || !Number.isInteger(end) || start === end) {
+    toast("請先在文字框中選取一句文字");
+    editor.focus();
+    return;
+  }
+  const key = $("#inlineFontFamily").value;
+  const selected = editor.value.slice(start, end);
+  const replacement = `[font=${key}]${selected}[/font]`;
+  editor.setRangeText(replacement, start, end, "select");
+  updateCharacterCount();
+  scheduleLivePreview("layout", 120);
+  editor.focus();
+  toast("已套用局部字體");
+}
+
 function updateColorLabel(inputId, labelId) {
   $(labelId).textContent = $(inputId).value.toUpperCase();
 }
@@ -980,6 +1035,7 @@ function registerWebMCP() {
 }
 
 function initializeApp() {
+  initializeInlineFontTool();
 $$(".mode-tab").forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
 $$(".ratio-option").forEach((button) => button.addEventListener("click", () => {
   selectRatio(button.dataset.ratio);
@@ -997,6 +1053,7 @@ $("#textInput").addEventListener("input", () => {
   updateCharacterCount();
   scheduleLivePreview("layout", 420);
 });
+$("#applyInlineFont").addEventListener("click", applyInlineFont);
 $("#generate").addEventListener("click", generatePreview);
 
 $("#fontFamily").addEventListener("change", () => {

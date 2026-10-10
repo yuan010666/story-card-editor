@@ -1,3 +1,33 @@
+@import url("https://cdn.jsdelivr.net/npm/@chinese-fonts/cubic@3.0.0/dist/Cubic/result.css");
+
+@font-face {
+  font-family: "StoryLuoyan";
+  src: url("https://cdn.jsdelivr.net/gh/Chenyu-otf/chenyuluoyan_thin@main/ChenYuluoyan-2.0-Thin.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "StoryJason2";
+  src: url("https://cdn.jsdelivr.net/gh/jasonhandwriting/JasonHandwriting@master/JasonHandwriting2.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "StorySweiSpring";
+  src: url("https://cdn.jsdelivr.net/gh/max32002/swei-spring@1.068/WebFont/CJK%20TC/SweiSpringCJKtc-Regular.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "StoryGenWan";
+  src: url("https://raw.githubusercontent.com/ButTaiwan/genwan-font/master/otf/TW/GenWanMin2TW-R.otf") format("opentype");
+  font-display: swap;
+  font-weight: 400;
+}
+
 :root {
   color-scheme: light;
   --paper: #f8f4f5;
@@ -149,6 +179,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 .helper-copy { margin: 0 0 12px; color: var(--muted); font-size: .78rem; line-height: 1.65; }
 .helper-copy code { padding: 1px 4px; border-radius: 5px; color: var(--rose-ink); background: var(--pink-pale); font-family: inherit; }
+.inline-font-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 0 0 5px; }
+.inline-font-toolbar > span { color: var(--ink); font-size: .76rem; font-weight: 700; }
+.inline-font-toolbar select, .inline-font-toolbar button { height: 36px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.inline-font-toolbar select { min-width: 0; padding: 0 30px 0 10px; color: var(--ink); }
+.inline-font-toolbar button { padding: 0 12px; color: var(--rose-ink); font-size: .72rem; font-weight: 700; cursor: pointer; }
+.inline-font-toolbar button:hover { border-color: #e7bdca; background: var(--pink-pale); }
+.inline-font-help { margin: 0 0 9px; color: var(--faint); font-size: .68rem; line-height: 1.5; }
 
 .text-editor {
   width: 100%;
@@ -488,6 +525,8 @@ footer a { color: var(--pink-deep); }
   .toolbar-group { gap: 3px; }
   .preview-toolbar button { height: 32px; font-size: .64rem; }
   .preview-toolbar button span { font-size: .75rem; }
+  .inline-font-toolbar { grid-template-columns: auto minmax(0, 1fr); }
+  .inline-font-toolbar button { grid-column: 1 / -1; }
   .stage { margin-inline: -2px; }
   .single-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
 }

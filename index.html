@@ -14,7 +14,7 @@
   <link rel="manifest" href="site.webmanifest?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;700&family=Chiron+Sung+HK:wght@400;700&family=Hachi+Maru+Pop&family=Huninn&family=Iansui&family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;700&family=Chiron+Sung+HK:wght@400;700&family=Hachi+Maru+Pop&family=Huninn&family=Iansui&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -46,6 +46,12 @@
             <button id="expandEditor" class="text-button" type="button" aria-expanded="false">展開編輯</button>
           </div>
           <p class="helper-copy"><code>*淺色文字*</code>、<code>**局部粗體**</code>、行首 <code>&gt;</code> 引用、單獨一行 <code>---</code> 分隔。換行會保留。</p>
+          <div class="inline-font-toolbar" aria-label="局部字體工具">
+            <span>局部字體</span>
+            <select id="inlineFontFamily" aria-label="局部字體"></select>
+            <button id="applyInlineFont" type="button">套用到選取文字</button>
+          </div>
+          <p class="inline-font-help">先在下方選取一句文字，再選字體套用；可與粗體、淺色文字一起使用。</p>
           <textarea id="textInput" class="text-editor" spellcheck="false" placeholder="把長篇劇情貼在這裡……"></textarea>
           <div class="editor-footer">
             <span id="charCount">0 字</span>
@@ -108,7 +114,13 @@
                     <option value="hachimaru">丸丸泡泡體</option>
                     <option value="wenkai">霞鶩文楷</option>
                     <option value="iansui">芫荽手寫</option>
-                    <option value="klee">手帳筆記體</option>
+                    <option value="luoyan">辰宇落雁體</option>
+                    <option value="jason2">清松手寫體 2</option>
+                  </optgroup>
+                  <optgroup label="特色字體">
+                    <option value="swei">獅尾四季春</option>
+                    <option value="genwan">源雲明體</option>
+                    <option value="cubic">俐方體 11 號</option>
                   </optgroup>
                   <optgroup label="系統字體">
                     <option value="rounded">系統圓體</option>
